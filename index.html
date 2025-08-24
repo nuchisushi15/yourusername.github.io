@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaMark Pro - Advanced Watermarking Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8fafc;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+        }
+        
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dropzone {
+            transition: all 0.3s ease;
+        }
+        
+        .dropzone.dragover {
+            border-color: #6366f1;
+            background-color: #eef2ff;
+            transform: scale(1.02);
+        }
+        
+        .watermark-preview img {
+            transition: all 0.3s ease;
+        }
+        
+        .watermark-preview img:hover {
+            transform: scale(1.1);
+        }
+        
+        .progress-fill {
+            transition: width 0.3s ease;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c7d2fe;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a5b4fc;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="gradient-bg text-white shadow-lg">
+            <div class="container mx-auto px-4 py-8">
+                <div class="flex flex-col items-center text-center">
+                    <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-water text-3xl"></i>
+                    </div>
+                    <h1 class="text-4xl font-bold mb-2">AquaMark Pro</h1>
+                    <p class="text-xl opacity-90">Professional watermarking for your creative assets</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-4 py-8 -mt-10">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <!-- Settings Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+                    <!-- Watermark Settings -->
+                    <div class="bg-gray-50 p-6 rounded-lg border-l-4 border-indigo-500">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-stamp mr-2 text-indigo-500"></i>
+                            Watermark Settings
+                        </h3>
+
+                        <!-- Upload Section -->
+                        <div id="uploadSection" class="dropzone mb-6 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer transition-all duration-300">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                                    <i class="fas fa-cloud-upload-alt text-3xl text-indigo-500"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-1">Drop your files here</h3>
+                                <p class="text-gray-500 mb-4">or click to browse your computer</p>
+                                <p class="text-sm text-gray-400">Supports: JPG, PNG, GIF, MP4, WEBM</p>
+                            </div>
+                            <input type="file" id="fileInput" multiple accept="image/*,video/mp4,video/webm,video/quicktime" class="hidden">
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Watermark Type</label>
+                                <div class="flex space-x-2">
+                                    <button id="bechatzrosBtn" value="bechatzros" class="flex-1 flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md">
+                                        <i class="fas fa-stamp mr-2"></i>
+                                        Bechatzros
+                                    </button>
+                                    <button id="krishkesBtn" value="krishkes" class="flex-1 flex items-center justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors shadow-md">
+                                        <i class="fas fa-tag mr-2"></i>
+                                        Krishkes
+                                    </button>
+                                    <button id="customBtn" value="custom" class="flex-1 flex items-center justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors shadow-md">
+                                        <i class="fas fa-cog mr-2"></i>
+                                        Custom
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="presetPreview" class="flex gap-3 mt-4">
+                                <img id="presetCenterPreview" class="w-24 h-16 object-contain rounded-lg border border-gray-200 shadow-sm" title="Center Watermark">
+                                <img id="presetBottomPreview" class="w-24 h-16 object-contain rounded-lg border border-gray-200 shadow-sm" title="Bottom Watermark">
+                            </div>
+                            
+                            <div id="customUploads" class="hidden space-y-4">
+                                <div>
+                                    <label for="centerWatermark" class="block text-sm font-medium text-gray-700 mb-1">Center Watermark</label>
+                                    <div class="flex items-center">
+                                        <label class="flex flex-col items-center justify-center w-full px-4 py-6 bg-white border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <i class="fas fa-cloud-upload-alt text-2xl text-indigo-500 mb-2"></i>
+                                                <p class="text-sm text-gray-500">Click to upload</p>
+                                            </div>
+                                            <input id="centerWatermark" type="file" class="hidden" accept="image/*">
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="bottomWatermark" class="block text-sm font-medium text-gray-700 mb-1">Bottom Watermark</label>
+                                    <div class="flex items-center">
+                                        <label class="flex flex-col items-center justify-center w-full px-4 py-6 bg-white border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <i class="fas fa-cloud-upload-alt text-2xl text-indigo-500 mb-2"></i>
+                                                <p class="text-sm text-gray-500">Click to upload</p>
+                                            </div>
+                                            <input id="bottomWatermark" type="file" class="hidden" accept="image/*">
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div id="watermarkPreview" class="flex gap-3"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <!-- Center Watermark Settings -->
+                    <div class="bg-gray-50 p-6 rounded-lg border-l-4 border-indigo-500">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-crosshairs mr-2 text-indigo-500"></i>
+                            Center Watermark
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Center Watermark Settings -->
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-700 mb-2">Center Watermark</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="centerOpacity" class="block text-sm font-medium text-gray-700 mb-1">Opacity: <span id="centerOpacityValue" class="text-indigo-600">40%</span></label>
+                                        <input type="range" id="centerOpacity" min="0" max="100" value="40" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="centerSize" class="block text-sm font-medium text-gray-700 mb-1">Size: <span id="centerSizeValue" class="text-indigo-600">30%</span></label>
+                                        <input type="range" id="centerSize" min="5" max="100" value="30" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                        <label for="centerXOffset" class="block text-sm font-medium text-gray-700 mb-1">X Position: <span id="centerXOffsetValue" class="text-indigo-600">0px</span></label>
+                                        <input type="range" id="centerXOffset" min="0" max="100" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                    </div>
+                                    <div>
+                                        <label for="centerYOffset" class="block text-sm font-medium text-gray-700 mb-1">Y Position: <span id="centerYOffsetValue" class="text-indigo-600">0px</span></label>
+                                        <input type="range" id="centerYOffset" min="0" max="100" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bottom Watermark Settings -->
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-700 mb-2">Bottom Watermark</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="bottomOpacity" class="block text-sm font-medium text-gray-700 mb-1">Opacity: <span id="bottomOpacityValue" class="text-indigo-600">100%</span></label>
+                                        <input type="range" id="bottomOpacity" min="0" max="100" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="bottomSize" class="block text-sm font-medium text-gray-700 mb-1">Size: <span id="bottomSizeValue" class="text-indigo-600">10%</span></label>
+                                        <input type="range" id="bottomSize" min="5" max="100" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                        <label for="bottomXOffset" class="block text-sm font-medium text-gray-700 mb-1">X Position: <span id="bottomXOffsetValue" class="text-indigo-600">20px</span></label>
+                                        <input type="range" id="bottomXOffset" min="0" max="100" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                    </div>
+                                    <div>
+                                        <label for="bottomYOffset" class="block text-sm font-medium text-gray-700 mb-1">Y Position: <span id="bottomYOffsetValue" class="text-indigo-600">20px</span></label>
+                                        <input type="range" id="bottomYOffset" min="0" max="100" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                
+                <!-- Files Grid -->
+                <div id="filesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6"></div>
+
+                <!-- Action Buttons -->
+                <div class="px-6 pb-6 text-center flex justify-center gap-4">
+                    <button id="processAllBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg">
+                        <i class="fas fa-cog mr-2"></i>
+                        Process All
+                    </button>
+                    <button id="clearAllBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md hover:shadow-lg">
+                        <i class="fas fa-trash mr-2"></i>
+                        Clear All Files
+                    </button>
+                </div>
+                
+                <!-- Download Options -->
+                <div id="downloadOptions" class="hidden p-6 bg-gray-50 rounded-b-xl border-t border-gray-200">
+                    <div class="text-center">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            All files processed!
+                        </h3>
+                        <p class="text-gray-600 mb-6">Choose your preferred download method:</p>
+                        <div class="flex flex-wrap justify-center gap-4">
+                            <button id="downloadZipBtn" class="flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg">
+                                <i class="fas fa-file-archive mr-2"></i>
+                                Download as ZIP
+                            </button>
+                            <button id="downloadSeparateBtn" class="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg">
+                                <i class="fas fa-file-download mr-2"></i>
+                                Download Separately
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 py-6">
+            <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+                <p>© 2023 AquaMark Pro. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        class WatermarkTool {
+            constructor() {
+                this.files = [];
+                this.watermarkImages = {};
+                this.initializeEventListeners();
+                this.loadPresetWatermarks();
+            }
+
+            initializeEventListeners() {
+                const uploadSection = document.getElementById('uploadSection');
+                const fileInput = document.getElementById('fileInput');
+                const watermarkTypeButtons = document.querySelectorAll('[id$="Btn"]');
+                watermarkTypeButtons[0].click(); // Set default selection
+
+                // File upload handlers
+                uploadSection.addEventListener('click', (e) => {
+                    if (e.target !== fileInput) {
+                        fileInput.value = ''; // Reset to allow selecting same file again
+                        fileInput.click();
+                    }
+                });
+                
+                // Upload section drag events
+                uploadSection.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadSection.classList.add('dragover');
+                });
+                
+                uploadSection.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadSection.classList.remove('dragover');
+                });
+                
+                uploadSection.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadSection.classList.remove('dragover');
+                    
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        this.handleFiles(e.dataTransfer.files);
+                    }
+                });
+                
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                        this.handleFiles(e.target.files);
+                    }
+                });
+
+                // Watermark type buttons
+                const watermarkButtons = [
+                    document.getElementById('bechatzrosBtn'),
+                    document.getElementById('krishkesBtn'),
+                    document.getElementById('customBtn')
+                ];
+
+                watermarkButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        // Update button styles
+                        watermarkButtons.forEach(b => {
+                            if (b === btn) {
+                                b.classList.remove('bg-gray-200', 'text-gray-700');
+                                b.classList.add('bg-indigo-600', 'text-white');
+                            } else {
+                                b.classList.remove('bg-indigo-600', 'text-white');
+                                b.classList.add('bg-gray-200', 'text-gray-700');
+                            }
+                        });
+                        
+                        this.handleWatermarkTypeChange(btn.value);
+                        this.updateLivePreview(); // Update preview immediately
+                    });
+                });
+
+                // Custom watermark uploads
+                document.getElementById('centerWatermark').addEventListener('change', (e) => {
+                    this.handleCustomWatermark('center', e.target.files[0]);
+                });
+                document.getElementById('bottomWatermark').addEventListener('change', (e) => {
+                    this.handleCustomWatermark('bottom', e.target.files[0]);
+                });
+
+                // Process all button
+                document.getElementById('processAllBtn').addEventListener('click', () => {
+                    this.processAllFiles();
+                });
+                
+                // Clear all button
+                document.getElementById('clearAllBtn').addEventListener('click', () => {
+                    this.files = [];
+                    document.getElementById('filesGrid').innerHTML = '';
+                    document.getElementById('downloadOptions').classList.add('hidden');
+                    document.getElementById('previewSection').classList.add('hidden');
+                });
+
+                // Download buttons
+                document.getElementById('downloadZipBtn').addEventListener('click', () => {
+                    this.downloadAsZip();
+                });
+                document.getElementById('downloadSeparateBtn').addEventListener('click', () => {
+                    this.downloadSeparately();
+                });
+
+                // Range sliders
+                this.initializeRangeSliders();
+            }
+
+            initializeRangeSliders() {
+                const sliders = [
+                    { id: 'centerOpacity', suffix: '%' },
+                    { id: 'bottomOpacity', suffix: '%' },
+                    { id: 'centerSize', suffix: '%' },
+                    { id: 'bottomSize', suffix: '%' },
+                    { id: 'centerXOffset', suffix: 'px' },
+                    { id: 'centerYOffset', suffix: 'px' },
+                    { id: 'bottomXOffset', suffix: 'px' },
+                    { id: 'bottomYOffset', suffix: 'px' }
+                ];
+
+                sliders.forEach(slider => {
+                    const input = document.getElementById(slider.id);
+                    const display = document.getElementById(slider.id + 'Value');
+                    
+                    const updateHandler = (e) => {
+                        display.textContent = e.target.value + slider.suffix;
+                        this.updateLivePreview();
+                    };
+                    
+                    input.addEventListener('input', updateHandler);
+                    input.addEventListener('change', updateHandler); // Also update on final change
+                });
+            }
+
+            async updateLivePreview() {
+                if (this.files.length === 0) return;
+                
+                // Process all image files for preview
+                for (const fileData of this.files) {
+                    if (!fileData.file.type.startsWith('image/')) continue;
+                    
+                    try {
+                        // Process with current settings - use original file data but create new blob
+                        const previewFileData = {
+                            ...fileData,
+                            processedBlob: null,
+                            cardElements: {
+                                progressFill: { style: { width: '0%' } }
+                            }
+                        };
+                        
+                        await this.processImage(previewFileData, previewFileData.cardElements.progressFill);
+                        
+                        // Update the preview image in the card
+                        if (fileData.updatePreview) {
+                            // Revoke old URL if exists
+                            if (fileData.currentPreviewUrl) {
+                                URL.revokeObjectURL(fileData.currentPreviewUrl);
+                            }
+                            fileData.currentPreviewUrl = URL.createObjectURL(previewFileData.processedBlob);
+                            fileData.updatePreview(previewFileData.processedBlob);
+                        }
+                    } catch (error) {
+                        console.error('Preview update failed for file:', fileData.file.name, error);
+                    }
+                }
+            }
+
+            async loadPresetWatermarks() {
+                const presets = {
+                    bechatzros: {
+                        center: 'https://static.wixstatic.com/media/02ac6b_4acc6d7c34c74ee48720e077f565f2c7~mv2.png',
+                        bottom: 'https://static.wixstatic.com/media/02ac6b_8d4319340b8d4972aa9b4f8fa0db2318~mv2.png'
+                    },
+                    krishkes: {
+                        center: 'https://static.wixstatic.com/media/02ac6b_4acc6d7c34c74ee48720e077f565f2c7~mv2.png',
+                        bottom: 'https://static.wixstatic.com/media/02ac6b_8743c8b104a04fae8199ab35a2c1aa2c~mv2.png'
+                    }
+                };
+
+                for (const [preset, urls] of Object.entries(presets)) {
+                    this.watermarkImages[preset] = {};
+                    
+                    for (const [position, url] of Object.entries(urls)) {
+                        try {
+                            const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+                            const response = await fetch(proxyUrl);
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            
+                            const blob = await response.blob();
+                            const img = new Image();
+                            
+                            await new Promise((resolve, reject) => {
+                                img.onload = resolve;
+                                img.onerror = reject;
+                                img.src = URL.createObjectURL(blob);
+                            });
+                            
+                            this.watermarkImages[preset][position] = img;
+                            
+                        } catch (error) {
+                            try {
+                                const img = new Image();
+                                img.crossOrigin = 'anonymous';
+                                
+                                await new Promise((resolve, reject) => {
+                                    img.onload = resolve;
+                                    img.onerror = reject;
+                                    img.src = url;
+                                });
+                                
+                                this.watermarkImages[preset][position] = img;
+                                
+                            } catch (fallbackError) {
+                                console.warn(`Failed to load ${preset} ${position} watermark`);
+                            }
+                        }
+                    }
+                }
+                
+                // Update preview immediately after loading
+                this.updateWatermarkPreviews('bechatzros');
+            }
+
+            handleWatermarkTypeChange(type) {
+                const customUploads = document.getElementById('customUploads');
+                const presetPreview = document.getElementById('presetPreview');
+                
+                if (type === 'custom') {
+                    customUploads.classList.remove('hidden');
+                    presetPreview.classList.add('hidden');
+                } else {
+                    customUploads.classList.add('hidden');
+                    presetPreview.classList.remove('hidden');
+                    
+                    // Update preview images based on selected type
+                    this.updateWatermarkPreviews(type);
+                }
+                
+                // Force immediate preview update
+                if (this.files.length > 0) {
+                    this.updateLivePreview();
+                }
+            }
+
+            handleCustomWatermark(position, file) {
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        if (!this.watermarkImages.custom) {
+                            this.watermarkImages.custom = {};
+                        }
+                        this.watermarkImages.custom[position] = img;
+                        this.updateWatermarkPreview();
+                        // Force immediate preview update
+                        if (this.files.length > 0) {
+                            this.updateLivePreview();
+                        }
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            updateWatermarkPreviews(type) {
+                const centerPreview = document.getElementById('presetCenterPreview');
+                const bottomPreview = document.getElementById('presetBottomPreview');
+                
+                if (this.watermarkImages[type]) {
+                    if (this.watermarkImages[type].center) {
+                        centerPreview.src = this.watermarkImages[type].center.src;
+                    }
+                    if (this.watermarkImages[type].bottom) {
+                        bottomPreview.src = this.watermarkImages[type].bottom.src;
+                    }
+                }
+            }
+
+            updateWatermarkPreview() {
+                const preview = document.getElementById('watermarkPreview');
+                const custom = this.watermarkImages.custom;
+                
+                preview.innerHTML = '';
+                if (custom) {
+                    if (custom.center) {
+                        const centerImg = document.createElement('img');
+                        centerImg.src = custom.center.src;
+                        centerImg.className = 'w-24 h-16 object-contain rounded-lg border border-gray-200 shadow-sm';
+                        centerImg.title = 'Center Watermark';
+                        preview.appendChild(centerImg);
+                    }
+                    if (custom.bottom) {
+                        const bottomImg = document.createElement('img');
+                        bottomImg.src = custom.bottom.src;
+                        bottomImg.className = 'w-24 h-16 object-contain rounded-lg border border-gray-200 shadow-sm';
+                        bottomImg.title = 'Bottom Watermark';
+                        preview.appendChild(bottomImg);
+                    }
+                }
+            }
+
+            handleFiles(fileList) {
+                Array.from(fileList).forEach(file => {
+                    if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+                        this.addFile(file);
+                    }
+                });
+                
+                // Process first file immediately for preview
+                if (this.files.length > 0) {
+                    this.updateLivePreview();
+                }
+                
+                // Just add files, don't process automatically
+            }
+
+            addFile(file) {
+                const fileId = Date.now() + Math.random();
+                const fileData = {
+                    id: fileId,
+                    file: file,
+                    processed: false,
+                    originalFormat: this.getFileExtension(file.name)
+                };
+                
+                this.files.push(fileData);
+                this.createFileCard(fileData);
+            }
+
+            getFileExtension(filename) {
+                return filename.includes('.') ? filename.split('.').pop().toLowerCase() : '';
+            }
+
+            createFileCard(fileData) {
+                const card = document.createElement('div');
+                card.className = 'file-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 relative';
+                card.dataset.fileId = fileData.id;
+                card.draggable = true;
+                
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', fileData.id);
+                    e.dataTransfer.effectAllowed = 'copy';
+                    // Set drag image to be the file's preview
+                    if (fileData.file.type.startsWith('image/')) {
+                        const img = new Image();
+                        img.src = URL.createObjectURL(fileData.file);
+                        e.dataTransfer.setDragImage(img, 0, 0);
+                    }
+                    // Also store the file data for easier access
+                    e.dataTransfer.setData('application/json', JSON.stringify({
+                        id: fileData.id,
+                        isProcessed: !!fileData.processedBlob
+                    }));
+                });
+
+                // Preview container
+                const preview = document.createElement('div');
+                preview.className = 'w-full h-40 bg-gray-100 flex items-center justify-center relative';
+                
+                if (fileData.file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.className = 'w-full h-full object-contain';
+                    img.src = URL.createObjectURL(fileData.file);
+                    preview.appendChild(img);
+                    
+                    // Update with watermarked version when processed
+                    fileData.updatePreview = (blob) => {
+                        img.src = URL.createObjectURL(blob);
+                    };
+                } else {
+                    const videoIcon = document.createElement('div');
+                    videoIcon.className = 'text-indigo-500 text-4xl';
+                    videoIcon.innerHTML = '<i class="fas fa-video"></i>';
+                    preview.appendChild(videoIcon);
+                }
+
+                // File info
+                const info = document.createElement('div');
+                info.className = 'p-3';
+                
+                const fileName = document.createElement('div');
+                fileName.className = 'text-sm font-medium text-gray-800 truncate';
+                fileName.textContent = fileData.file.name;
+                
+                const fileSize = document.createElement('div');
+                fileSize.className = 'text-xs text-gray-500';
+                fileSize.textContent = `${(fileData.file.size / 1024 / 1024).toFixed(2)} MB`;
+                
+                info.appendChild(fileName);
+                info.appendChild(fileSize);
+
+                // Progress bar
+                const progressContainer = document.createElement('div');
+                progressContainer.className = 'w-full bg-gray-200 rounded-full h-1.5';
+                
+                const progressFill = document.createElement('div');
+                progressFill.className = 'progress-fill bg-indigo-600 h-1.5 rounded-full';
+                progressFill.style.width = '0%';
+                
+                progressContainer.appendChild(progressFill);
+
+                // Status text
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded mt-2 hidden';
+                
+                // Process button
+                const processBtn = document.createElement('button');
+                processBtn.className = 'w-full mt-2 py-2 px-3 bg-indigo-600 text-white rounded text-sm font-medium flex items-center justify-center hover:bg-indigo-700 transition-colors';
+                processBtn.innerHTML = '<i class="fas fa-cog mr-2"></i> Process';
+                processBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.processFile(fileData);
+                };
+
+                // Remove button (X icon) - moved inside preview container
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition-colors z-10';
+                removeBtn.innerHTML = '<i class="fas fa-times text-xs"></i>';
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation(); // Prevent triggering file selection
+                    this.removeFile(fileData.id);
+                };
+
+                // Assemble the card
+                preview.appendChild(removeBtn);
+                card.appendChild(preview);
+                card.appendChild(info);
+                card.appendChild(progressContainer);
+                card.appendChild(statusDiv);
+                card.appendChild(processBtn);
+
+                document.getElementById('filesGrid').appendChild(card);
+                
+                // Store references to these elements for later updates
+                fileData.cardElements = {
+                    progressFill,
+                    statusDiv,
+                    processBtn
+                };
+            }
+
+            removeFile(fileId) {
+                const fileToRemove = this.files.find(f => f.id === fileId);
+                if (fileToRemove && fileToRemove.currentPreviewUrl) {
+                    URL.revokeObjectURL(fileToRemove.currentPreviewUrl);
+                }
+                
+                this.files = this.files.filter(f => f.id !== fileId);
+                const card = document.querySelector(`[data-file-id="${fileId}"]`);
+                if (card) card.remove();
+                this.checkAllProcessed();
+            }
+
+            async processAllFiles() {
+                const unprocessedFiles = this.files.filter(f => !f.processed);
+                
+                if (unprocessedFiles.length === 0) {
+                    alert('All files have already been processed!');
+                    return;
+                }
+                
+                for (const fileData of unprocessedFiles) {
+                    await this.processFile(fileData);
+                }
+                
+                this.checkAllProcessed();
+            }
+
+            async processFile(fileData) {
+                const { progressFill, statusDiv, processBtn } = fileData.cardElements;
+                
+                try {
+                    processBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+                    processBtn.className = 'w-full mt-2 py-2 px-3 bg-gray-500 text-white rounded text-sm font-medium flex items-center justify-center';
+                    processBtn.onclick = null;
+                    if (fileData.file.type.startsWith('image/')) {
+                        await this.processImage(fileData, progressFill);
+                    } else if (fileData.file.type.startsWith('video/')) {
+                        statusDiv.classList.remove('hidden');
+                        statusDiv.textContent = 'Processing video - this may take a few minutes...';
+                        await this.processVideo(fileData, progressFill, statusDiv);
+                    }
+                    
+                    // Update button after processing
+                    processBtn.innerHTML = '<i class="fas fa-download mr-2"></i> Download';
+                    processBtn.className = 'w-full mt-2 py-2 px-3 bg-green-600 text-white rounded text-sm font-medium flex items-center justify-center hover:bg-green-700 transition-colors';
+                    processBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.downloadFile(fileData);
+                    };
+
+                    // Update preview immediately for first file
+                    if (this.files[0] && this.files[0].id === fileData.id) {
+                        this.updateLivePreview();
+                    }
+                    fileData.processed = true;
+                    statusDiv.classList.add('hidden');
+                    progressFill.style.width = '100%';
+                    
+                    // Update preview if this is an image
+                    if (fileData.file.type.startsWith('image/') && fileData.updatePreview) {
+                        fileData.updatePreview(fileData.processedBlob);
+                    }
+                    
+                    // Force check if all files are processed
+                    this.checkAllProcessed();
+                    
+                } catch (error) {
+                    console.error('Processing failed:', error);
+                    processBtn.innerHTML = '<i class="fas fa-redo mr-2"></i> Retry';
+                    processBtn.className = 'w-full mt-2 py-2 px-3 bg-red-500 text-white rounded text-sm font-medium flex items-center justify-center hover:bg-red-600 transition-colors';
+                    processBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.processFile(fileData);
+                    };
+                    statusDiv.classList.add('hidden');
+                    progressFill.style.width = '0%';
+                }
+            }
+
+            checkAllProcessed() {
+                const allProcessed = this.files.length > 0 && this.files.every(f => f.processed);
+                const downloadOptions = document.getElementById('downloadOptions');
+                
+                if (allProcessed) {
+                    downloadOptions.classList.remove('hidden');
+                } else {
+                    downloadOptions.classList.add('hidden');
+                }
+            }
+
+            async processImage(fileData, progressFill) {
+                return new Promise((resolve, reject) => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    
+                    img.onload = async () => {
+                        try {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            
+                            progressFill.style.width = '20%';
+                            ctx.drawImage(img, 0, 0);
+                            progressFill.style.width = '40%';
+                            
+                            // Get active watermark type from selected button
+                            const activeButton = document.querySelector('[id$="Btn"].bg-indigo-600');
+                            const watermarkType = activeButton ? activeButton.value : 'bechatzros';
+                            
+                            const centerOpacity = document.getElementById('centerOpacity').value / 100;
+                            const bottomOpacity = document.getElementById('bottomOpacity').value / 100;
+                            const centerSize = document.getElementById('centerSize').value / 100;
+                            const bottomSize = document.getElementById('bottomSize').value / 100;
+                            
+                            if (this.watermarkImages[watermarkType]) {
+                                const watermarks = this.watermarkImages[watermarkType];
+                                
+                                if (watermarks.center) {
+                                    const centerHeight = canvas.height * centerSize;
+                                    const centerWidth = (watermarks.center.width / watermarks.center.height) * centerHeight;
+                                    const centerXOffset = parseInt(document.getElementById('centerXOffset').value);
+                                    const centerYOffset = parseInt(document.getElementById('centerYOffset').value);
+                                    const centerX = (canvas.width - centerWidth) / 2 + centerXOffset;
+                                    const centerY = (canvas.height - centerHeight) / 2 + centerYOffset;
+                                    
+                                    // Update slider values to reflect actual pixel positions
+                                    document.getElementById('centerXOffset').value = centerXOffset;
+                                    document.getElementById('centerXOffsetValue').textContent = centerXOffset + 'px';
+                                    document.getElementById('centerYOffset').value = centerYOffset;
+                                    document.getElementById('centerYOffsetValue').textContent = centerYOffset + 'px';
+                                    
+                                    ctx.save();
+                                    ctx.globalAlpha = centerOpacity;
+                                    ctx.drawImage(watermarks.center, centerX, centerY, centerWidth, centerHeight);
+                                    ctx.restore();
+                                    progressFill.style.width = '70%';
+                                }
+                                
+                                if (watermarks.bottom) {
+                                    const bottomHeight = canvas.height * bottomSize;
+                                    const bottomWidth = (watermarks.bottom.width / watermarks.bottom.height) * bottomHeight;
+                                    const bottomXOffset = parseInt(document.getElementById('bottomXOffset').value);
+                                    const bottomYOffset = parseInt(document.getElementById('bottomYOffset').value);
+                                    const bottomX = bottomXOffset;
+                                    const bottomY = canvas.height - bottomHeight - bottomYOffset;
+                                    
+                                    // Update slider values to reflect actual pixel positions
+                                    document.getElementById('bottomXOffset').value = bottomXOffset;
+                                    document.getElementById('bottomXOffsetValue').textContent = bottomXOffset + 'px';
+                                    document.getElementById('bottomYOffset').value = bottomYOffset;
+                                    document.getElementById('bottomYOffsetValue').textContent = bottomYOffset + 'px';
+                                    
+                                    ctx.save();
+                                    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                                    ctx.shadowBlur = 5;
+                                    ctx.shadowOffsetX = 2;
+                                    ctx.shadowOffsetY = 2;
+                                    ctx.globalAlpha = bottomOpacity;
+                                    ctx.drawImage(watermarks.bottom, bottomX, bottomY, bottomWidth, bottomHeight);
+                                    ctx.restore();
+                                    progressFill.style.width = '90%';
+                                }
+                            }
+                            
+                            const originalFormat = fileData.originalFormat;
+                            let outputFormat = 'image/png';
+                            let quality = 0.95;
+                            
+                            if (originalFormat === 'jpg' || originalFormat === 'jpeg') {
+                                outputFormat = 'image/jpeg';
+                            } else if (originalFormat === 'webp') {
+                                outputFormat = 'image/webp';
+                            }
+                            
+                            canvas.toBlob((blob) => {
+                                if (!blob) {
+                                    throw new Error('Failed to create blob from canvas');
+                                }
+                                fileData.processedBlob = blob;
+                                progressFill.style.width = '100%';
+                                resolve();
+                            }, outputFormat, quality);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    
+                    img.onerror = () => {
+                        reject(new Error('Failed to load image'));
+                    };
+                    img.src = URL.createObjectURL(fileData.file);
+                });
+            }
+
+            async processVideo(fileData, progressFill, statusDiv) {
+                return new Promise(async (resolve) => {
+                    const video = document.createElement('video');
+                    video.playsInline = true;
+                    video.preload = 'metadata';
+                    video.muted = true;
+                    video.setAttribute('webkit-playsinline', '');
+                    video.setAttribute('playsinline', '');
+                    
+                    video.onloadedmetadata = async () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = video.videoWidth || 640;
+                            canvas.height = video.videoHeight || 480;
+                            
+                            progressFill.style.width = '10%';
+                            statusDiv.textContent = `Processing video: ${video.duration.toFixed(1)}s duration detected`;
+                            
+                            // Get watermark settings
+                            const activeButton = document.querySelector('[id$="Btn"].bg-indigo-600');
+                            const watermarkType = activeButton ? activeButton.value : 'bechatzros';
+                            const centerOpacity = document.getElementById('centerOpacity').value / 100;
+                            const bottomOpacity = document.getElementById('bottomOpacity').value / 100;
+                            const centerSize = document.getElementById('centerSize').value / 100;
+                            const bottomSize = document.getElementById('bottomSize').value / 100;
+                            
+                            // Use simpler recording approach without audio
+                            const stream = canvas.captureStream(30);
+                            const mediaRecorder = new MediaRecorder(stream, {
+                                mimeType: 'video/webm',
+                                videoBitsPerSecond: 5000000
+                            });
+                            
+                            const chunks = [];
+                            mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+                            mediaRecorder.onstop = () => {
+                                const blob = new Blob(chunks, { type: 'video/webm' });
+                                fileData.processedBlob = blob;
+                                fileData.isVideo = true;
+                                progressFill.style.width = '100%';
+                                statusDiv.textContent = 'Video processing completed!';
+                                resolve();
+                            };
+                            
+                            mediaRecorder.start();
+                            
+                            // Process video frame by frame
+                            video.currentTime = 0;
+                            await video.play();
+                            
+                            const processFrame = async () => {
+                                if (video.paused || video.ended) {
+                                    mediaRecorder.stop();
+                                    return;
+                                }
+                                
+                                // Draw current frame
+                                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                
+                                // Apply watermarks
+                                if (this.watermarkImages[watermarkType]) {
+                                    const watermarks = this.watermarkImages[watermarkType];
+                                    
+                                    if (watermarks.center) {
+                                        const centerWidth = canvas.width * centerSize;
+                                        const centerHeight = (watermarks.center.height / watermarks.center.width) * centerWidth;
+                                        const centerX = (canvas.width - centerWidth) / 2;
+                                        const centerY = (canvas.height - centerHeight) / 2;
+                                        
+                                        ctx.save();
+                                        ctx.globalAlpha = centerOpacity;
+                                        ctx.drawImage(watermarks.center, centerX, centerY, centerWidth, centerHeight);
+                                        ctx.restore();
+                                    }
+                                    
+                                    if (watermarks.bottom) {
+                                        const bottomWidth = canvas.width * bottomSize;
+                                        const bottomHeight = (watermarks.bottom.height / watermarks.bottom.width) * bottomWidth;
+                                        const bottomXOffset = parseInt(document.getElementById('bottomXOffset').value);
+                                        const bottomYOffset = parseInt(document.getElementById('bottomYOffset').value);
+                                        const bottomX = bottomXOffset;
+                                        const bottomY = canvas.height - bottomHeight - bottomYOffset;
+                                        
+                                        ctx.save();
+                                        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                                        ctx.shadowBlur = 5;
+                                        ctx.shadowOffsetX = 2;
+                                        ctx.shadowOffsetY = 2;
+                                        ctx.globalAlpha = bottomOpacity;
+                                        ctx.drawImage(watermarks.bottom, bottomX, bottomY, bottomWidth, bottomHeight);
+                                        ctx.restore();
+                                    }
+                                }
+                                
+                                // Update progress
+                                const progress = 10 + (video.currentTime / video.duration) * 85;
+                                progressFill.style.width = progress + '%';
+                                statusDiv.textContent = `Processing: ${video.currentTime.toFixed(1)}s / ${video.duration.toFixed(1)}s`;
+                                
+                                // Continue processing
+                                if (!video.paused && !video.ended) {
+                                    video.currentTime += 0.1; // Process every 100ms
+                                    setTimeout(processFrame, 100);
+                                }
+                            };
+                            
+                            await processFrame();
+                            
+                        } catch (error) {
+                            console.error('Video processing error:', error);
+                            statusDiv.textContent = 'Processing failed - using original file';
+                            fileData.processedBlob = fileData.file;
+                            fileData.isVideo = true;
+                            progressFill.style.width = '100%';
+                            resolve();
+                        }
+                    };
+                    
+                    video.onerror = () => {
+                        statusDiv.textContent = 'Video loading failed - using original file';
+                        fileData.processedBlob = fileData.file;
+                        fileData.isVideo = true;
+                        progressFill.style.width = '100%';
+                        resolve();
+                    };
+                    
+                    video.src = URL.createObjectURL(fileData.file);
+                });
+            }
+
+            downloadFile(fileData) {
+                if (!fileData.processedBlob) return;
+                
+                const url = URL.createObjectURL(fileData.processedBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                const baseName = fileData.file.name.replace(/\.[^/.]+$/, "");
+                
+                if (fileData.isVideo) {
+                    // For videos, we'll always output as webm since that's what we process to
+                    a.download = `watermarked_${baseName}.webm`;
+                } else {
+                    const originalExt = fileData.originalFormat || 'png';
+                    a.download = `watermarked_${baseName}.${originalExt}`;
+                }
+                
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            async downloadAsZip() {
+                const processedFiles = this.files.filter(f => f.processed && f.processedBlob);
+                
+                if (processedFiles.length === 0) {
+                    alert('No processed files available for download.');
+                    return;
+                }
+                
+                if (processedFiles.length === 1) {
+                    this.downloadFile(processedFiles[0]);
+                    return;
+                }
+                
+                try {
+                    const zip = new JSZip();
+                    
+                    for (let i = 0; i < processedFiles.length; i++) {
+                        const fileData = processedFiles[i];
+                        const baseName = fileData.file.name.replace(/\.[^/.]+$/, "");
+                        
+                        let filename;
+                        if (fileData.isVideo) {
+                            let extension = 'webm';
+                            if (fileData.processedBlob.type.includes('mp4')) {
+                                extension = 'mp4';
+                            } else if (fileData.originalFormat && ['mp4', 'mov', 'avi', 'mkv'].includes(fileData.originalFormat)) {
+                                extension = fileData.originalFormat;
+                            }
+                            filename = `watermarked_${baseName}.${extension}`;
+                        } else {
+                            const originalExt = fileData.originalFormat || 'png';
+                            filename = `watermarked_${baseName}.${originalExt}`;
+                        }
+                        
+                        zip.file(filename, fileData.processedBlob);
+                    }
+                    
+                    const zipBlob = await zip.generateAsync({
+                        type: 'blob',
+                        compression: 'DEFLATE',
+                        compressionOptions: { level: 6 }
+                    });
+                    
+                    const url = URL.createObjectURL(zipBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `watermarked_files_${new Date().toISOString().slice(0, 10)}.zip`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                } catch (error) {
+                    console.error('Zip creation failed:', error);
+                    alert('Failed to create zip file. Try downloading separately.');
+                }
+            }
+
+            downloadSeparately() {
+                const processedFiles = this.files.filter(f => f.processed && f.processedBlob);
+                
+                if (processedFiles.length === 0) {
+                    alert('No processed files available for download.');
+                    return;
+                }
+                
+                processedFiles.forEach((fileData, index) => {
+                    setTimeout(() => {
+                        this.downloadFile(fileData);
+                    }, index * 500);
+                });
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new WatermarkTool();
+        });
+    </script>
+</body>
+  </html>
